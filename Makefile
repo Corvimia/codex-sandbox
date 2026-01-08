@@ -6,6 +6,7 @@ REPO?=$(word 2,$(MAKECMDGOALS))
 REPOS?=$(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 MAIN_REPO?=$(word 1,$(REPOS))
 ADD_DIR_FLAGS=$(foreach repo,$(wordlist 2,$(words $(REPOS)),$(REPOS)),--add-dir /workspace/$(repo))
+RUN_CMD?=$(filter-out run,$(MAKECMDGOALS))
 
 .PHONY: check-env setup build run shell codex clone clean volume-fix-perms
 

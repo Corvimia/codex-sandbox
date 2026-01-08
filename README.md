@@ -1,21 +1,28 @@
 # Codex Sandbox
 
+This repo provides a Docker-based sandbox for running Codex with persisted workspaces and authentication, plus helper Make targets to clone, shell, and run Codex against multiple repos.
+
 ## Installation
 
-1. Start the container system if it is not already running:
-   - `docker info`
-2. Create the persistent volume:
-   - `docker volume create codex-repos`
-3. Create a local codex config directory (persisted at `~/.codex` in the container):
-   - `mkdir -p volumes/codex-config`
-4. Copy your host git config into the repo (for image builds):
-   - `mkdir -p volumes/gitconfig && cp ~/.gitconfig volumes/gitconfig/.gitconfig`
-5. Build the container image:
-   - `make build`
-6. Fix volume permissions (one-time):
-   - `make volume-fix-perms`
-7. Start a shell:
-   - `make shell`
+1. Run setup:
+   - `make setup`
+
+## Environment
+
+Set these before running `make` commands:
+- `export GITHUB_TOKEN=...`
+- `export CODEX_ORG=your-org`
+
+## Usage
+
+Clone a repo into the shared workspace volume:
+- `make clone ORG=your-org REPO=your-repo`
+
+Run a one-off command in the container:
+- `make run ls -la /workspace`
+
+Start Codex with a main repo plus extra repos:
+- `make codex repo-main repo-extra-1 repo-extra-2`
 
 ## Note
 
