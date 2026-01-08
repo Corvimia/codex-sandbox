@@ -26,11 +26,19 @@ build: check-env
 	docker build -t $(IMAGE) .
 
 run: check-env
-	docker run -it --rm \
-	  -e GITHUB_TOKEN \
-	  -v $(VOLUME):/workspace \
-	  -v $(CODEX_CONFIG_DIR):/home/sandbox/.codex \
-	  $(IMAGE)
+	@if [ -n "$(RUN_CMD)" ]; then \
+	  docker run -it --rm \
+	    -e GITHUB_TOKEN \
+	    -v $(VOLUME):/workspace \
+	    -v $(CODEX_CONFIG_DIR):/home/sandbox/.codex \
+	    $(IMAGE) -c '$(RUN_CMD)'; \
+	else \
+	  docker run -it --rm \
+	    -e GITHUB_TOKEN \
+	    -v $(VOLUME):/workspace \
+	    -v $(CODEX_CONFIG_DIR):/home/sandbox/.codex \
+	    $(IMAGE); \
+	fi
 
 shell: check-env
 	docker run -it --rm \

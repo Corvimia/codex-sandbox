@@ -27,4 +27,11 @@ make -C "${repo_root}" build
 echo "Fixing volume permissions..."
 make -C "${repo_root}" volume-fix-perms
 
+if [[ -s "${repo_root}/volumes/codex-config/auth.json" ]]; then
+  echo "Codex already authenticated. Skipping login."
+else
+  echo "Starting Codex device login..."
+  make -C "${repo_root}" run RUN_CMD="codex auth login --device-auth"
+fi
+
 echo "Setup complete."
