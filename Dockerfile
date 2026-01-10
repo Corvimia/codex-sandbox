@@ -2,7 +2,7 @@ FROM node:24-bookworm
 
 # Base tools
 RUN apt-get update
-RUN apt-get install -y git ca-certificates zsh curl dnsutils gh
+RUN apt-get install -y git ca-certificates zsh curl dnsutils gh openjdk-11-jdk
 
 # Install codex
 RUN npm i -g @openai/codex
@@ -19,6 +19,8 @@ RUN chown sandbox:sandbox /home/sandbox/.gitconfig
 USER sandbox
 
 ENV HOME=/home/sandbox
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV PATH="$JAVA_HOME/bin:$PATH"
 WORKDIR /workspace
 
 ENTRYPOINT ["/bin/zsh"]
