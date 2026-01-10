@@ -18,6 +18,10 @@ EXTRA_REPOS?=$(LOCAL_EXTRA_REPOS)
 EXTRA_DIR_FLAGS=$(foreach repo,$(EXTRA_REPOS),--add-dir /workspace/$(repo))
 
 .PHONY: check-env setup build run shell codex codex-local clone clean volume-fix-perms
+.PHONY: $(LOCAL_REPO) $(LOCAL_EXTRA_REPOS)
+
+$(LOCAL_REPO) $(LOCAL_EXTRA_REPOS):
+	@:
 
 check-env:
 	@if [ -z "$(GITHUB_TOKEN)" ]; then \
