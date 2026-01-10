@@ -24,6 +24,9 @@ Run a one-off command in the container:
 Start Codex with a main repo plus extra repos:
 - `make codex repo-main repo-extra-1 repo-extra-2`
 
+Mount a local repo from your host into the container:
+- `make codex-local /path/to/your/repo repo-extra-1 repo-extra-2`
+
 ## Note
 
 We tried using `container`, but hit too many network-related issues (DNS resolution failures). The setup now uses Docker only.
