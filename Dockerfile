@@ -6,6 +6,7 @@ RUN apt-get install -y git ca-certificates zsh curl dnsutils gh
 
 # Install codex
 RUN npm i -g @openai/codex
+RUN npm i -g pnpm
 
 # Non-root user
 RUN useradd -m -s /bin/zsh sandbox

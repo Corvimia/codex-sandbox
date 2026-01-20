@@ -24,8 +24,17 @@ Run a one-off command in the container:
 Start Codex with a main repo plus extra repos:
 - `make codex repo-main repo-extra-1 repo-extra-2`
 
+Create a fresh session, clone repos, build, and start Codex:
+- `make codex-with-setup repo-main repo-extra-1 repo-extra-2`
+
 Mount a local repo from your host into the container:
 - `make codex-local /path/to/your/repo repo-extra-1 repo-extra-2`
+
+Clean up a session folder:
+- `make codex-clean <session-id>`
+
+Clean up all session folders (preserves config):
+- `make codex-clean-all`
 
 ## Note
 
