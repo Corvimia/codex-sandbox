@@ -14,8 +14,9 @@ RUN mkdir -p /workspace
 RUN chown -R sandbox:sandbox /workspace
 RUN touch /home/sandbox/.zshrc
 RUN chown sandbox:sandbox /home/sandbox/.zshrc
-COPY volumes/gitconfig/.gitconfig /home/sandbox/.gitconfig
-RUN chown sandbox:sandbox /home/sandbox/.gitconfig
+RUN mkdir -p /home/sandbox/.ssh
+RUN chmod 700 /home/sandbox/.ssh \
+  && chown -R sandbox:sandbox /home/sandbox/.ssh
 
 USER sandbox
 

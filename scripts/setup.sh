@@ -11,15 +11,34 @@ docker volume create codex-repos >/dev/null
 
 echo "Preparing local config directories..."
 mkdir -p "${repo_root}/volumes/codex-config"
-mkdir -p "${repo_root}/volumes/gitconfig"
+mkdir -p "${repo_root}/volumes/sshconfig"
+chmod 700 "${repo_root}/volumes/sshconfig"
 
-if [[ ! -f "${HOME}/.gitconfig" ]]; then
-  echo "Missing ~/.gitconfig. Configure git locally, then re-run setup."
+ssh_key=""
+if [[ -f "${repo_root}/volumes/sshconfig/id_ed25519" ]]; then
+  ssh_key="${repo_root}/volumes/sshconfig/id_ed25519"
+elif [[ -f "${repo_root}/volumes/sshconfig/id_rsa" ]]; then
+  ssh_key="${repo_root}/volumes/sshconfig/id_rsa"
+fi
+
+if [[ -z "${ssh_key}" ]]; then
+  echo "Missing SSH key in ${repo_root}/volumes/sshconfig (expected id_ed25519 or id_rsa)."
   exit 1
 fi
 
-echo "Copying host git config into repo..."
-cp "${HOME}/.gitconfig" "${repo_root}/volumes/gitconfig/.gitconfig"
+chmod 600 "${ssh_key}"
+
+ssh_config="${repo_root}/volumes/sshconfig/config"
+if [[ ! -f "${ssh_config}" ]]; then
+  cat > "${ssh_config}" <<EOF
+Host github.com
+  HostName github.com
+  User git
+  IdentityFile /home/sandbox/.ssh/$(basename "${ssh_key}")
+  IdentitiesOnly yes
+EOF
+  chmod 600 "${ssh_config}"
+fi
 
 echo "Building image..."
 make -C "${repo_root}" build

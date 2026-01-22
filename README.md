@@ -10,8 +10,16 @@ This repo provides a Docker-based sandbox for running Codex with persisted works
 ## Environment
 
 Set these before running `make` commands:
-- `export GITHUB_TOKEN=...`
 - `export CODEX_ORG=your-org`
+
+## SSH Authentication (Required)
+
+GitHub access is SSH-only in this setup:
+1. Create an SSH key under `./volumes/sshconfig` (for example `id_ed25519`).
+2. Add the public key to GitHub (Settings → SSH and GPG keys).
+3. Ensure the key and folder permissions are restrictive (`chmod 700 ./volumes/sshconfig` and `chmod 600` for private keys).
+
+The container mounts `./volumes/sshconfig` to `/home/sandbox/.ssh` at runtime.
 
 ## Usage
 
@@ -43,4 +51,3 @@ We tried using `container`, but hit too many network-related issues (DNS resolut
 ## Troubleshooting
 
 - If `make build` fails on `apt-get update` with DNS errors, check Docker's DNS configuration (daemon.json) and ensure macOS has a valid DNS resolver configured.
-- If `codex` exits without showing a login prompt in the container, run `codex login --device-auth` to force the device flow in the terminal.
