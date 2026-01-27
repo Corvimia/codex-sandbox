@@ -21,7 +21,7 @@ HOST_REPO_WORKDIR?=/workspace/$(HOST_REPO_NAME)
 EXTRA_REPOS?=$(LOCAL_EXTRA_REPOS)
 EXTRA_DIR_FLAGS=$(foreach repo,$(EXTRA_REPOS),--add-dir /workspace/$(repo))
 
-.PHONY: check-env setup build run shell codex codex-local codex-with-setup clone clean codex-clean codex-clean-all volume-fix-perms
+.PHONY: check-env setup build build-no-cache upgrade-tools run shell codex codex-local codex-with-setup clone clean codex-clean codex-clean-all volume-fix-perms
 .PHONY: $(LOCAL_REPO) $(LOCAL_EXTRA_REPOS)
 
 $(LOCAL_REPO) $(LOCAL_EXTRA_REPOS):
@@ -41,6 +41,17 @@ build: check-env
 
 build-no-cache: check-env
 	$(MAKE) build NO_CACHE=1
+
+upgrade-tools: check-env
+	docker run --rm \
+	  -v $(CURDIR)/volumes/tools:/opt/tools \
+	  -w /opt/tools \
+	  node:24-bookworm sh -c '\
+	    corepack enable; \
+	    corepack prepare pnpm@latest --activate; \
+	    pnpm install --lockfile-only \
+	  '
+	$(MAKE) build
 
 run: check-env
 	@if [ -n "$(RUN_CMD)" ]; then \

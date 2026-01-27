@@ -29,6 +29,13 @@ If you use `gh`, its config (including `hosts.yml`) is persisted by mounting `./
 
 Codex config persists at `./volumes/codex-config/config.toml` and is mounted to `/home/sandbox/.codex/config.toml`. The setup script creates a default profile named `full_access`, and `make codex` uses that profile by default.
 
+## Tooling (npm CLIs)
+
+CLI tools are managed via `./volumes/tools/package.json` and `./volumes/tools/pnpm-lock.yaml`, then installed into `/opt/tools` during the image build. The container adds `/opt/tools/node_modules/.bin` to `PATH` for the `sandbox` user.
+
+Upgrade tool versions and rebuild the image:
+- `make upgrade-tools`
+
 ## Usage
 
 Clone a repo into the shared workspace volume:

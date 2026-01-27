@@ -14,8 +14,25 @@ mkdir -p "${repo_root}/volumes/codex-config"
 mkdir -p "${repo_root}/volumes/sshconfig"
 mkdir -p "${repo_root}/volumes/gitconfig"
 mkdir -p "${repo_root}/volumes/ghconfig"
+mkdir -p "${repo_root}/volumes/tools"
 mkdir -p "${repo_root}/volumes/workspaces"
 chmod 700 "${repo_root}/volumes/sshconfig"
+
+tools_package="${repo_root}/volumes/tools/package.json"
+if [[ ! -f "${tools_package}" ]]; then
+  cat > "${tools_package}" <<'EOF'
+{
+  "name": "codex-sandbox-tools",
+  "private": true,
+  "devDependencies": {
+    "@openai/codex": "latest",
+    "pnpm": "latest"
+  }
+}
+EOF
+elif [[ ! -s "${tools_package}" ]]; then
+  echo "Tools package.json exists but is empty: ${tools_package}"
+fi
 
 codex_config="${repo_root}/volumes/codex-config/config.toml"
 if [[ ! -f "${codex_config}" ]]; then
@@ -71,7 +88,12 @@ elif [[ ! -s "${git_config}" ]]; then
 fi
 
 echo "Building image..."
-make -C "${repo_root}" build
+tools_lockfile="${repo_root}/volumes/tools/pnpm-lock.yaml"
+if [[ ! -f "${tools_lockfile}" ]]; then
+  make -C "${repo_root}" upgrade-tools
+else
+  make -C "${repo_root}" build
+fi
 
 echo "Fixing volume permissions..."
 make -C "${repo_root}" volume-fix-perms
