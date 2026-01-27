@@ -21,6 +21,14 @@ GitHub access is SSH-only in this setup:
 
 The container mounts `./volumes/sshconfig` to `/home/sandbox/.ssh` at runtime.
 
+## GitHub CLI Authentication (Optional)
+
+If you use `gh`, its config (including `hosts.yml`) is persisted by mounting `./volumes/ghconfig` to `/home/sandbox/.config/gh`. The setup script will run `gh auth login` if `hosts.yml` is missing.
+
+## Codex Config
+
+Codex config persists at `./volumes/codex-config/config.toml` and is mounted to `/home/sandbox/.codex/config.toml`. The setup script creates a default profile named `full_access`, and `make codex` uses that profile by default.
+
 ## Usage
 
 Clone a repo into the shared workspace volume:
@@ -43,6 +51,8 @@ Clean up a session folder:
 
 Clean up all session folders (preserves config):
 - `make codex-clean-all`
+
+Session folders are stored under `./volumes/workspaces`.
 
 ## Note
 

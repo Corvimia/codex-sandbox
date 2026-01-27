@@ -12,7 +12,23 @@ docker volume create codex-repos >/dev/null
 echo "Preparing local config directories..."
 mkdir -p "${repo_root}/volumes/codex-config"
 mkdir -p "${repo_root}/volumes/sshconfig"
+mkdir -p "${repo_root}/volumes/gitconfig"
+mkdir -p "${repo_root}/volumes/ghconfig"
+mkdir -p "${repo_root}/volumes/workspaces"
 chmod 700 "${repo_root}/volumes/sshconfig"
+
+codex_config="${repo_root}/volumes/codex-config/config.toml"
+if [[ ! -f "${codex_config}" ]]; then
+  cat > "${codex_config}" <<'EOF'
+# Codex config (user-maintained)
+
+[profiles.full_access]
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+EOF
+elif [[ ! -s "${codex_config}" ]]; then
+  echo "Codex config exists but is empty: ${codex_config}"
+fi
 
 ssh_key=""
 if [[ -f "${repo_root}/volumes/sshconfig/id_ed25519" ]]; then
@@ -40,6 +56,20 @@ EOF
   chmod 600 "${ssh_config}"
 fi
 
+git_config="${repo_root}/volumes/gitconfig/.gitconfig"
+if [[ ! -f "${git_config}" ]]; then
+  echo "Creating git config at ${git_config}"
+  read -r -p "Git user.name: " git_user_name
+  read -r -p "Git user.email: " git_user_email
+  cat > "${git_config}" <<EOF
+[user]
+  name = ${git_user_name}
+  email = ${git_user_email}
+EOF
+elif [[ ! -s "${git_config}" ]]; then
+  echo "Git config exists but is empty: ${git_config}"
+fi
+
 echo "Building image..."
 make -C "${repo_root}" build
 
@@ -51,6 +81,14 @@ if [[ -s "${repo_root}/volumes/codex-config/auth.json" ]]; then
 else
   echo "Starting Codex device login..."
   make -C "${repo_root}" run RUN_CMD="codex auth login --device-auth"
+fi
+
+echo "Checking GitHub CLI authentication..."
+if make -C "${repo_root}" run RUN_CMD="gh auth status -h github.com" >/dev/null 2>&1; then
+  echo "GitHub CLI already authenticated. Skipping login."
+else
+  echo "Starting GitHub CLI login..."
+  make -C "${repo_root}" run RUN_CMD="gh auth login"
 fi
 
 echo "Setup complete."
