@@ -9,6 +9,7 @@ Project guidance for Codex working in this repo.
 - PR titles must follow the same conventional commit format as commits.
 - PR descriptions should use Markdown formatting.
 - When making a spec, use Markdown for readability and number questions.
+- Prefer the `make <context>.<target>` sugar syntax in docs and examples (e.g. `make ts.setup`).
 
 ## Conventional commit types
 Use one of: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`, `build`, `perf`, `style`, `revert`.
@@ -24,3 +25,5 @@ If the user says "send it":
 - Push the branch.
 - If no PR exists, open a PR targeting `main` using `gh`, with a one-paragraph Markdown summary.
 - If a PR already exists for the branch, just commit and push; do not create a new PR.
+- Before creating a PR, generate the full PR description and validate it with the user.
+- When updating the PR body, use the GitHub GraphQL API (not `gh pr edit`).

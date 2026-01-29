@@ -2,27 +2,50 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ctx="${CTX:-}"
+valid_contexts=("ts" "android")
+
+if [[ -z "${ctx}" ]]; then
+  echo "Missing required env var: CTX"
+  echo "Available contexts: ${valid_contexts[*]}"
+  exit 1
+fi
+
+ctx_ok=0
+for candidate in "${valid_contexts[@]}"; do
+  if [[ "${candidate}" == "${ctx}" ]]; then
+    ctx_ok=1
+    break
+  fi
+done
+
+if [[ "${ctx_ok}" -ne 1 ]]; then
+  echo "Unknown context: ${ctx}"
+  echo "Available contexts: ${valid_contexts[*]}"
+  exit 1
+fi
 
 echo "Checking Docker..."
 docker info >/dev/null
 
 echo "Creating Docker volume..."
-docker volume create codex-repos >/dev/null
+docker volume create "codex-repos-${ctx}" >/dev/null
 
 echo "Preparing local config directories..."
 mkdir -p "${repo_root}/volumes/codex-config"
 mkdir -p "${repo_root}/volumes/sshconfig"
 mkdir -p "${repo_root}/volumes/gitconfig"
 mkdir -p "${repo_root}/volumes/ghconfig"
-mkdir -p "${repo_root}/volumes/tools"
-mkdir -p "${repo_root}/volumes/workspaces"
+mkdir -p "${repo_root}/volumes/tools/${ctx}"
+mkdir -p "${repo_root}/volumes/workspaces/${ctx}"
 chmod 700 "${repo_root}/volumes/sshconfig"
 
-tools_package="${repo_root}/volumes/tools/package.json"
+tools_package="${repo_root}/volumes/tools/${ctx}/package.json"
 if [[ ! -f "${tools_package}" ]]; then
-  cat > "${tools_package}" <<'EOF'
+  if [[ "${ctx}" == "ts" ]]; then
+    cat > "${tools_package}" <<'EOF'
 {
-  "name": "codex-sandbox-tools",
+  "name": "codex-sandbox-tools-ts",
   "private": true,
   "devDependencies": {
     "@openai/codex": "latest",
@@ -30,6 +53,17 @@ if [[ ! -f "${tools_package}" ]]; then
   }
 }
 EOF
+  else
+    cat > "${tools_package}" <<'EOF'
+{
+  "name": "codex-sandbox-tools-android",
+  "private": true,
+  "dependencies": {
+    "@openai/codex": "latest"
+  }
+}
+EOF
+  fi
 elif [[ ! -s "${tools_package}" ]]; then
   echo "Tools package.json exists but is empty: ${tools_package}"
 fi
@@ -92,29 +126,33 @@ elif [[ ! -s "${git_config}" ]]; then
 fi
 
 echo "Building image..."
-tools_lockfile="${repo_root}/volumes/tools/pnpm-lock.yaml"
-if [[ ! -f "${tools_lockfile}" ]]; then
-  make -C "${repo_root}" upgrade-tools
+if [[ "${ctx}" == "ts" ]]; then
+  tools_lockfile="${repo_root}/volumes/tools/${ctx}/pnpm-lock.yaml"
 else
-  make -C "${repo_root}" build
+  tools_lockfile="${repo_root}/volumes/tools/${ctx}/package-lock.json"
+fi
+if [[ ! -f "${tools_lockfile}" ]]; then
+  make -C "${repo_root}" upgrade-tools CTX="${ctx}"
+else
+  make -C "${repo_root}" build CTX="${ctx}"
 fi
 
 echo "Fixing volume permissions..."
-make -C "${repo_root}" volume-fix-perms
+make -C "${repo_root}" volume-fix-perms CTX="${ctx}"
 
 if [[ -s "${repo_root}/volumes/codex-config/auth.json" ]]; then
   echo "Codex already authenticated. Skipping login."
 else
   echo "Starting Codex device login..."
-  make -C "${repo_root}" run RUN_CMD="codex auth login --device-auth"
+  make -C "${repo_root}" run CTX="${ctx}" RUN_CMD="codex auth login --device-auth"
 fi
 
 echo "Checking GitHub CLI authentication..."
-if make -C "${repo_root}" run RUN_CMD="gh auth status -h github.com" >/dev/null 2>&1; then
+if make -C "${repo_root}" run CTX="${ctx}" RUN_CMD="gh auth status -h github.com" >/dev/null 2>&1; then
   echo "GitHub CLI already authenticated. Skipping login."
 else
   echo "Starting GitHub CLI login..."
-  make -C "${repo_root}" run RUN_CMD="gh auth login"
+  make -C "${repo_root}" run CTX="${ctx}" RUN_CMD="gh auth login"
 fi
 
 echo "Setup complete."
