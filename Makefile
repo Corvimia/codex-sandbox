@@ -41,7 +41,8 @@ check-env:
 	  if [ -z "$$val" ]; then \
 	    prompt_var="REQUIRED_ENV_PROMPT_$$var"; \
 	    eval "prompt=\$${$${prompt_var}:-Missing required env var $$var. Enter value: }"; \
-	    read -r "INPUT?$$prompt "; \
+	    printf '%s ' "$$prompt"; \
+	    read -r INPUT; \
 	    if [ -z "$$INPUT" ]; then \
 	      echo "$$var is required."; \
 	      exit 1; \
