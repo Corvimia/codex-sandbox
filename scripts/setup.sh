@@ -56,7 +56,11 @@ fi
 
 if [[ -z "${ssh_key}" ]]; then
   echo "Missing SSH key in ${repo_root}/volumes/sshconfig (expected id_ed25519 or id_rsa)."
-  exit 1
+  echo "Generating a new ed25519 key..."
+  ssh_key="${repo_root}/volumes/sshconfig/id_ed25519"
+  ssh-keygen -t ed25519 -f "${ssh_key}" -N "" -C "codex-sandbox-corvimia"
+  echo "Public key:"
+  cat "${ssh_key}.pub"
 fi
 
 chmod 600 "${ssh_key}"
