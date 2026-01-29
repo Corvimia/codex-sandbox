@@ -1,6 +1,6 @@
 # Codex Sandbox
 
-This repo provides a Docker-based sandbox for running Codex with persisted workspaces and authentication, plus helper Make targets to clone, shell, and run Codex against multiple repos.
+This repo provides a Docker-based sandbox for running Codex with persisted workspaces and authentication, plus helper Make targets to clone, run commands, and run Codex against multiple repos.
 
 ## Installation
 
@@ -44,14 +44,8 @@ Clone a repo into the shared workspace volume:
 Run a one-off command in the container:
 - `make run ls -la /workspace`
 
-Start Codex with a main repo plus extra repos:
-- `make codex repo-main repo-extra-1 repo-extra-2`
-
 Create a fresh session, clone repos, build, and start Codex:
-- `make codex-with-setup repo-main repo-extra-1 repo-extra-2`
-
-Mount a local repo from your host into the container:
-- `make codex-local /path/to/your/repo repo-extra-1 repo-extra-2`
+- `make codex repo-main repo-extra-1 repo-extra-2`
 
 Clean up a session folder:
 - `make codex-clean <session-id>`

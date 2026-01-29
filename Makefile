@@ -21,7 +21,7 @@ HOST_REPO_WORKDIR?=/workspace/$(HOST_REPO_NAME)
 EXTRA_REPOS?=$(LOCAL_EXTRA_REPOS)
 EXTRA_DIR_FLAGS=$(foreach repo,$(EXTRA_REPOS),--add-dir /workspace/$(repo))
 
-.PHONY: check-env setup build build-no-cache upgrade-tools run shell codex codex-local codex-with-setup clone clean codex-clean codex-clean-all volume-fix-perms
+.PHONY: check-env setup build build-no-cache upgrade-tools run codex clone clean codex-clean codex-clean-all volume-fix-perms
 .PHONY: $(LOCAL_REPO) $(LOCAL_EXTRA_REPOS)
 
 $(LOCAL_REPO) $(LOCAL_EXTRA_REPOS):
@@ -72,15 +72,6 @@ run: check-env
 		    $(IMAGE); \
 	fi
 
-shell: check-env
-	docker run -it --rm \
-	-v $(VOLUME):/workspace \
-	-v $(CODEX_CONFIG_DIR):/home/sandbox/.codex \
-	-v $(SSH_CONFIG_DIR):/home/sandbox/.ssh \
-	-v $(GIT_CONFIG_DIR)/.gitconfig:/home/sandbox/.gitconfig \
-	-v $(GH_CONFIG_DIR):/home/sandbox/.config/gh \
-	$(IMAGE)
-
 clone: check-env
 	docker run -it --rm \
 	-v $(VOLUME):/workspace \
@@ -95,39 +86,6 @@ clone: check-env
 codex: check-env
 	@if [ -z "$(MAIN_REPO)" ]; then \
 	  echo "Usage: make codex <repo1> [repo2 ...]"; \
-	  exit 1; \
-	fi
-	docker run -it --rm \
-	-v $(VOLUME):/workspace \
-	-v $(CODEX_CONFIG_DIR):/home/sandbox/.codex \
-	-v $(SSH_CONFIG_DIR):/home/sandbox/.ssh \
-	-v $(GIT_CONFIG_DIR)/.gitconfig:/home/sandbox/.gitconfig \
-	-v $(GH_CONFIG_DIR):/home/sandbox/.config/gh \
-	-w /workspace/$(MAIN_REPO) \
-	$(IMAGE) -c '\
-	    codex --profile full_access $(ADD_DIR_FLAGS) \
-	  '
-
-codex-local: check-env
-	@if [ -z "$(HOST_REPO)" ]; then \
-	  echo "Usage: make codex-local /path/to/repo [extra-repo ...]"; \
-	  exit 1; \
-	fi
-	docker run -it --rm \
-	-v $(VOLUME):/workspace \
-	-v $(CODEX_CONFIG_DIR):/home/sandbox/.codex \
-	-v $(SSH_CONFIG_DIR):/home/sandbox/.ssh \
-	-v $(GIT_CONFIG_DIR)/.gitconfig:/home/sandbox/.gitconfig \
-	-v $(GH_CONFIG_DIR):/home/sandbox/.config/gh \
-	$(HOST_REPO_MOUNT) \
-	-w $(HOST_REPO_WORKDIR) \
-	$(IMAGE) -c '\
-	    codex --profile full_access $(EXTRA_DIR_FLAGS) \
-	  '
-
-codex-with-setup: check-env
-	@if [ -z "$(MAIN_REPO)" ]; then \
-	  echo "Usage: make codex-with-setup <repo1> [repo2 ...]"; \
 	  exit 1; \
 	fi
 	@set -euo pipefail; \
