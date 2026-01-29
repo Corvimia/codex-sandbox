@@ -38,6 +38,7 @@ mkdir -p "${repo_root}/volumes/gitconfig"
 mkdir -p "${repo_root}/volumes/ghconfig"
 mkdir -p "${repo_root}/volumes/tools/${ctx}"
 mkdir -p "${repo_root}/volumes/workspaces/${ctx}"
+mkdir -p "${repo_root}/volumes/gradle-cache/${ctx}"
 chmod 700 "${repo_root}/volumes/sshconfig"
 
 tools_package="${repo_root}/volumes/tools/${ctx}/package.json"
