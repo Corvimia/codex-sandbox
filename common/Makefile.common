@@ -44,12 +44,6 @@ check-ctx:
 	  exit 1; \
 	fi
 
-check-org:
-	@if [ -z "$(CODEX_ORG)" ]; then \
-	  echo "Missing required env var: CODEX_ORG"; \
-	  exit 1; \
-	fi
-
 setup: check-ctx
 	./scripts/setup.sh
 
