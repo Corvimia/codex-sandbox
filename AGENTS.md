@@ -8,6 +8,7 @@ Project guidance for Codex working in this repo.
 - Conventional commits required for all commit messages.
 - PR titles must follow the same conventional commit format as commits.
 - PR descriptions should use Markdown formatting.
+- When making a spec, use Markdown for readability and number questions.
 
 ## Conventional commit types
 Use one of: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`, `build`, `perf`, `style`, `revert`.
