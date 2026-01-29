@@ -27,7 +27,8 @@ We need the `android` container image to include the Android SDK because Android
   - `platform-tools`
 - Accept SDK licenses during image build.
 - Add `platform-tools` and `cmdline-tools/latest/bin` to `PATH`.
- - Add a Gradle cache mount for faster builds (e.g., mount to `/home/sandbox/.gradle`).
+- Add a Gradle cache mount for faster builds (e.g., mount to `/home/sandbox/.gradle`).
+- On ARM64, replace `aapt2` (and related build-tools binaries) with ARM64-compatible versions.
 
 ## Implementation Notes
 - Download the command line tools zip from the official source and verify checksum (no vendoring).
@@ -35,6 +36,7 @@ We need the `android` container image to include the Android SDK because Android
 - Run `yes | sdkmanager --licenses` during build.
 - Consider adding `--no_https` only if build environment blocks SSL.
 - Use `ARG ANDROID_SDK_VERSION` / `ARG ANDROID_BUILD_TOOLS_VERSION` to allow overrides.
+- Use a vetted ARM64 build-tools bundle to supply `aapt2` on ARM64 hosts.
 
 ## Verification
 - `sdkmanager --list` shows Platform 36 and Build-Tools 36.x installed.
