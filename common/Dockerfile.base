@@ -1,18 +1,14 @@
 FROM node:24-bookworm
 
 # Base tools
-RUN apt-get update
-RUN apt-get install -y git ca-certificates zsh curl dnsutils gh
-
-# Install toolset (managed via volumes/tools)
-WORKDIR /opt/tools
-COPY volumes/tools/package.json volumes/tools/pnpm-lock.yaml ./
-RUN corepack enable
-RUN corepack prepare pnpm@latest --activate
-RUN pnpm install --frozen-lockfile
+RUN apt-get update \
+  && apt-get install -y git ca-certificates zsh curl dnsutils gh \
+  && rm -rf /var/lib/apt/lists/*
 
 # Non-root user
 RUN useradd -m -s /bin/zsh sandbox
+RUN mkdir -p /opt/tools
+RUN chown -R sandbox:sandbox /opt/tools
 RUN mkdir -p /workspace
 RUN chown -R sandbox:sandbox /workspace
 RUN touch /home/sandbox/.zshrc

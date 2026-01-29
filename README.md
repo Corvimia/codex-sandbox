@@ -5,12 +5,15 @@ This repo provides a Docker-based sandbox for running Codex with persisted works
 ## Installation
 
 1. Run setup:
-   - `make setup`
+   - `CTX=ts make setup` (or `CTX=android make setup`)
 
 ## Environment
 
 Set these before running `make` commands:
 - `export CODEX_ORG=your-org`
+- `export CTX=ts` (or `android`)
+
+You can also put these in a repo root `.env` file (Make will load it).
 
 ## SSH Authentication (Required)
 
@@ -31,29 +34,39 @@ Codex config persists at `./volumes/codex-config/config.toml` and is mounted to 
 
 ## Tooling (npm CLIs)
 
-CLI tools are managed via `./volumes/tools/package.json` and `./volumes/tools/pnpm-lock.yaml`, then installed into `/opt/tools` during the image build. The container adds `/opt/tools/node_modules/.bin` to `PATH` for the `sandbox` user.
+Each context has its own tool manifest under `./volumes/tools/<context>/`. The `ts` context uses `pnpm-lock.yaml`, while the `android` context uses `package-lock.json`. Tools are installed into `/opt/tools` during the image build. The container adds `/opt/tools/node_modules/.bin` to `PATH` for the `sandbox` user.
 
 Upgrade tool versions and rebuild the image:
-- `make upgrade-tools`
+- `make CTX=ts upgrade-tools` (or `make android.upgrade-tools`)
 
 ## Usage
 
 Clone a repo into the shared workspace volume:
-- `make clone ORG=your-org REPO=your-repo`
+- `make CTX=ts clone ORG=your-org REPO=your-repo`
 
 Run a one-off command in the container:
-- `make run ls -la /workspace`
+- `make CTX=ts run ls -la /workspace`
+
+Start an interactive shell in the container:
+- `make CTX=ts run`
 
 Create a fresh session, clone repos, build, and start Codex:
-- `make codex repo-main repo-extra-1 repo-extra-2`
+- `make CTX=ts codex repo-main repo-extra-1 repo-extra-2`
 
 Clean up a session folder:
-- `make codex-clean <session-id>`
+- `make CTX=ts codex-clean <session-id>`
 
 Clean up all session folders (preserves config):
-- `make codex-clean-all`
+- `make CTX=ts codex-clean-all`
 
-Session folders are stored under `./volumes/workspaces`.
+Session folders are stored under `./volumes/workspaces/<context>`.
+
+List available contexts:
+- `make contexts`
+
+Optional sugar syntax:
+- `make ts.build`
+- `make android.run`
 
 ## Note
 
