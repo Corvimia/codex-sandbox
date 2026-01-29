@@ -1,3 +1,10 @@
+ifneq (,$(wildcard .env))
+include .env
+endif
+export
+
+REQUIRED_ENV_VARS=CODEX_ORG
+REQUIRED_ENV_PROMPT_CODEX_ORG=GitHub org (CODEX_ORG). Enter value:
 IMAGE=codex-sandbox
 VOLUME=codex-repos
 CODEX_CONFIG_DIR=$(CURDIR)/volumes/codex-config
@@ -28,10 +35,26 @@ $(LOCAL_REPO) $(LOCAL_EXTRA_REPOS):
 	@:
 
 check-env:
-	@if [ -z "$(CODEX_ORG)" ]; then \
-	  echo "Missing required env var: CODEX_ORG"; \
-	  exit 1; \
-	fi
+	@set -e; \
+	for var in $(REQUIRED_ENV_VARS); do \
+	  eval "val=\$$$${var}"; \
+	  if [ -z "$$val" ]; then \
+	    prompt_var="REQUIRED_ENV_PROMPT_$$var"; \
+	    eval "prompt=\$${$${prompt_var}:-Missing required env var $$var. Enter value: }"; \
+	    read -r "INPUT?$$prompt "; \
+	    if [ -z "$$INPUT" ]; then \
+	      echo "$$var is required."; \
+	      exit 1; \
+	    fi; \
+	    if [ -f .env ]; then \
+	      awk -v k="$$var" -v v="$$INPUT" 'BEGIN{done=0} $$0 ~ "^" k "=" {print k "=" v; done=1; next} {print} END{if(!done) print k "=" v}' .env > .env.tmp; \
+	      mv .env.tmp .env; \
+	    else \
+	      printf '%s=%s\n' "$$var" "$$INPUT" > .env; \
+	    fi; \
+	    export "$$var=$$INPUT"; \
+	  fi; \
+	done
 
 setup: check-env
 	./scripts/setup.sh
