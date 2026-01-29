@@ -1,3 +1,9 @@
+-include .env
+export
+
+REQUIRED_ENV_VARS=CODEX_ORG
+REQUIRED_ENV_PROMPT_CODEX_ORG=GitHub org (CODEX_ORG). Enter value:
+
 IMAGE_BASE=codex-sandbox
 BASE_IMAGE=codex-sandbox-base:latest
 IMAGE=$(IMAGE_BASE):$(CTX)
@@ -23,7 +29,7 @@ HOST_REPO_WORKDIR?=/workspace/$(HOST_REPO_NAME)
 EXTRA_REPOS?=$(LOCAL_EXTRA_REPOS)
 EXTRA_DIR_FLAGS=$(foreach repo,$(EXTRA_REPOS),--add-dir /workspace/$(repo))
 
-.PHONY: check-ctx check-org setup build-base build build-no-cache upgrade-tools run codex clone clean codex-clean codex-clean-all volume-fix-perms
+.PHONY: check-ctx check-org setup build-base build build-no-cache upgrade-tools run codex clone clean volume-fix-perms
 .PHONY: $(LOCAL_REPO) $(LOCAL_EXTRA_REPOS)
 
 $(LOCAL_REPO) $(LOCAL_EXTRA_REPOS):
@@ -43,6 +49,29 @@ check-ctx:
 	  echo "Context $(CTX) is missing TOOLS_DIR"; \
 	  exit 1; \
 	fi
+
+check-org:
+	@set -e; \
+	for var in $(REQUIRED_ENV_VARS); do \
+	  eval "val=\$$$${var}"; \
+	  if [ -z "$$val" ]; then \
+	    prompt_var="REQUIRED_ENV_PROMPT_$$var"; \
+	    eval "prompt=\$${$${prompt_var}:-Missing required env var $$var. Enter value: }"; \
+	    printf '%s ' "$$prompt"; \
+	    read -r INPUT; \
+	    if [ -z "$$INPUT" ]; then \
+	      echo "$$var is required."; \
+	      exit 1; \
+	    fi; \
+	    if [ -f .env ]; then \
+	      awk -v k="$$var" -v v="$$INPUT" 'BEGIN{done=0} $$0 ~ "^" k "=" {print k "=" v; done=1; next} {print} END{if(!done) print k "=" v}' .env > .env.tmp; \
+	      mv .env.tmp .env; \
+	    else \
+	      printf '%s=%s\n' "$$var" "$$INPUT" > .env; \
+	    fi; \
+	    export "$$var=$$INPUT"; \
+	  fi; \
+	done
 
 setup: check-ctx
 	./scripts/setup.sh
@@ -137,33 +166,6 @@ codex: check-ctx check-org
 	$(IMAGE) -c '\
 	    codex --profile full_access $(ADD_DIR_FLAGS) \
 	  '
-
-codex-clean: check-ctx
-	@if [ -z "$(REPO)" ]; then \
-	  echo "Usage: make codex-clean <session-id>"; \
-	  exit 1; \
-	fi
-	@set -euo pipefail; \
-	TARGET_DIR="$(WORKSPACES_DIR)/$(REPO)"; \
-	if [ ! -d "$$TARGET_DIR" ]; then \
-	  echo "Session folder not found: $$TARGET_DIR"; \
-	  exit 1; \
-	fi; \
-	rm -rf "$$TARGET_DIR"; \
-	echo "Removed $$TARGET_DIR"
-
-codex-clean-all: check-ctx
-	@set -euo pipefail; \
-	BASE_DIR="$(WORKSPACES_DIR)"; \
-	if [ ! -d "$$BASE_DIR" ]; then \
-	  echo "Workspaces folder not found: $$BASE_DIR"; \
-	  exit 1; \
-	fi; \
-	for dir in "$$BASE_DIR"/*; do \
-	  [ -d "$$dir" ] || continue; \
-	  rm -rf "$$dir"; \
-	  echo "Removed $$dir"; \
-	done
 
 volume-fix-perms: check-ctx
 	docker run --rm -u 0 \

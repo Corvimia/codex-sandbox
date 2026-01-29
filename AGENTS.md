@@ -9,6 +9,7 @@ Project guidance for Codex working in this repo.
 - PR titles must follow the same conventional commit format as commits.
 - PR descriptions should use Markdown formatting.
 - When making a spec, use Markdown for readability and number questions.
+- Prefer the `make <context>.<target>` sugar syntax in docs and examples (e.g. `make ts.setup`).
 
 ## Conventional commit types
 Use one of: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `ci`, `build`, `perf`, `style`, `revert`.
