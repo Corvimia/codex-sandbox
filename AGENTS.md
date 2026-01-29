@@ -24,3 +24,5 @@ If the user says "send it":
 - Push the branch.
 - If no PR exists, open a PR targeting `main` using `gh`, with a one-paragraph Markdown summary.
 - If a PR already exists for the branch, just commit and push; do not create a new PR.
+- Before creating a PR, generate the full PR description and validate it with the user.
+- When updating the PR body, use the GitHub GraphQL API (not `gh pr edit`).
